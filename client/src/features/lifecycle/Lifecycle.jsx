@@ -1,225 +1,183 @@
-import React, { useEffect, useState, useContext } from 'react';
-import api from '../../api/api';
-import { AuthContext } from '../../context/AuthContext';
-import MessageModal from '../../components/MessageModal';
+// src/features/lifecycle/Lifecycle.jsx
+import React, { useState, useEffect } from "react";
+import {
+  Lightbulb,
+  FileText,
+  Edit,
+  Calendar,
+  CheckCircle,
+} from "lucide-react";
 
-// The main CalendarView component
-export default function CalendarView() {
-  // Now using useContext for AuthContext as originally intended
-  const { setModal } = useContext(AuthContext);
-  const [events, setEvents] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [input, setInput] = useState('');
-  const [message, setMessage] = useState('');
-  const [editingEventId, setEditingEventId] = useState(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
+const iconMap = {
+  lightbulb: <Lightbulb size={24} />,
+  filetext: <FileText size={24} />,
+  edit: <Edit size={24} />,
+  calendar: <Calendar size={24} />,
+  checkcircle: <CheckCircle size={24} />,
+};
 
-  // Function to fetch events from the API
-  const fetchEvents = async () => {
-    try {
-      const res = await api.get('/api/calendar');
-      setEvents(res);
-    } catch (err) {
-      console.error(err);
-      // Using the app's global modal via AuthContext
-      setModal({ message: err.message || 'Failed to load events', type: 'error' });
-    }
-  };
+export default function Lifecycle() {
+  const initialSteps = [
+    {
+      title: "Idea Generation",
+      description: "Brainstorm new topics.",
+      icon: "lightbulb",
+      completed: false,
+      dueDate: "",
+      notes: "",
+    },
+    {
+      title: "Drafting",
+      description: "Write the initial content.",
+      icon: "filetext",
+      completed: false,
+      dueDate: "",
+      notes: "",
+    },
+    {
+      title: "Editing & Review",
+      description: "Refine the draft and get feedback.",
+      icon: "edit",
+      completed: false,
+      dueDate: "",
+      notes: "",
+    },
+    {
+      title: "Scheduling",
+      description: "Select a publication date and time.",
+      icon: "calendar",
+      completed: false,
+      dueDate: "",
+      notes: "",
+    },
+    {
+      title: "Publishing",
+      description: "The content goes live.",
+      icon: "checkcircle",
+      completed: false,
+      dueDate: "",
+      notes: "",
+    },
+  ];
 
-  // The useEffect hook now depends on `currentDate` so that events are re-fetched
-  // whenever the user navigates to a new month.
+  const [steps, setSteps] = useState(() => {
+    const saved = localStorage.getItem("lifecycleSteps");
+    return saved ? JSON.parse(saved) : initialSteps;
+  });
+
+  // Save to localStorage on every change
   useEffect(() => {
-    fetchEvents();
-  }, [currentDate]);
-
-  // Helper functions to calculate calendar days
-  const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
-  const firstDay = (y, m) => new Date(y, m, 1).getDay();
-
-  // Get month and year from the `currentDate` state
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
-  const numDays = daysInMonth(currentYear, currentMonth);
-  const start = firstDay(currentYear, currentMonth);
-  const days = [...Array(start).fill(null), ...Array.from({ length: numDays }, (_, i) => i + 1)];
-
-  // Filter events for a specific date
-  const eventsForDate = (d) => {
-    const key = new Date(currentYear, currentMonth, d).toDateString();
-    return events.filter(e => new Date(e.date).toDateString() === key);
-  };
-
-  // Function to open the event creation modal
-  const openModal = (day, event = null) => {
-    setSelectedDate(day);
-    setEditingEventId(event ? event._id : null);
-    setInput(event ? event.name : '');
-    setIsOpen(true);
-  };
-
-  // Function to save a new event or update an existing one
-  const save = async () => {
-    if (!input.trim()) return;
     try {
-      const dateObj = new Date(currentYear, currentMonth, selectedDate);
-      if (editingEventId) {
-        await api.put(`/api/calendar/${editingEventId}`, { name: input.trim(), date: dateObj.toISOString() });
-      } else {
-        await api.post('/api/calendar', { name: input.trim(), date: dateObj.toISOString() });
-      }
-      setIsOpen(false);
-      fetchEvents();
+      localStorage.setItem("lifecycleSteps", JSON.stringify(steps));
     } catch (err) {
-      console.error(err);
-      setModal({ message: err.body?.message || err.message || 'Failed to save event', type: 'error' });
+      console.error("Failed to save lifecycleSteps:", err);
     }
-  };
+  }, [steps]);
 
-  // Function to delete an event
-  const deleteEvent = async () => {
-    if (!editingEventId) return;
-    try {
-      await api.delete(`/api/calendar/${editingEventId}`);
-      setIsOpen(false);
-      fetchEvents();
-    } catch (err) {
-      console.error(err);
-      setModal({ message: err.body?.message || err.message || 'Failed to delete event', type: 'error' });
-    }
-  };
+  const toggle = (i) =>
+    setSteps((prev) =>
+      prev.map((s, idx) =>
+        idx === i ? { ...s, completed: !s.completed } : s
+      )
+    );
 
-  // Functions to navigate to the previous and next month
-  const goToPreviousMonth = () => {
-    setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
-  };
+  const updateDueDate = (i, date) =>
+    setSteps((prev) =>
+      prev.map((s, idx) => (idx === i ? { ...s, dueDate: date } : s))
+    );
 
-  const goToNextMonth = () => {
-    setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
-  };
+  const updateNotes = (i, text) =>
+    setSteps((prev) =>
+      prev.map((s, idx) => (idx === i ? { ...s, notes: text } : s))
+    );
 
-  // Function to check if a day is today's date
-  const isToday = (day) => {
-    const today = new Date();
-    return day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+  const progress =
+    (steps.filter((step) => step.completed).length / steps.length) * 100;
+
+  const getCardColor = (completed) => {
+    if (completed) return "ring-2 ring-green-500";
+    return "hover:ring-2 hover:ring-yellow-400";
   };
 
   return (
     <div className="flex-1 p-8">
-      {/* Navigation and Title Header */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={goToPreviousMonth}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors duration-200"
-        >
-          &lt; Previous
-        </button>
-        <h2 className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">
-          {/* Display the current month and year */}
-          {new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentDate)}
-        </h2>
-        <button
-          onClick={goToNextMonth}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition-colors duration-200"
-        >
-          Next &gt;
-        </button>
+      <h2 className="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-2">
+        Post Lifecycle
+      </h2>
+      <p className="text-xl text-gray-600 dark:text-gray-400 mb-6 max-w-2xl">
+        Track your post’s journey from idea to publishing.
+      </p>
+
+      {/* Progress bar */}
+      <div className="w-full bg-gray-200 rounded-full h-3 mb-10">
+        <div
+          className="bg-green-500 h-3 rounded-full transition-all"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
-      <p className="text-xl text-gray-600 dark:text-gray-400 mb-10">Click a date to add an event.</p>
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
-        <div className="grid grid-cols-7 gap-2 text-center font-bold text-gray-700 dark:text-gray-300 mb-4 border-b dark:border-gray-700 pb-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d}>{d}</div>)}
-        </div>
-        <div className="grid grid-cols-7 gap-2 text-center">
-          {days.map((d, i) => (
-            <div
-              key={i}
-              onClick={() => d !== null && openModal(d)}
-              className={`p-4 rounded-lg border border-gray-200 dark:border-gray-700 aspect-square ${
-                // Conditional styling for the day cells
-                d !== null
-                  ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200'
-                  : ''
-              } ${
-                d !== null
-                  ? isToday(d)
-                    ? 'bg-indigo-200 dark:bg-indigo-600'
-                    : 'bg-gray-50 dark:bg-gray-700'
-                  : ''
-              }`}
-            >
-              {d !== null && (
-                <>
-                  {/* Conditional styling for the day number */}
-                  <div className={`font-semibold ${isToday(d) ? 'text-indigo-800 dark:text-indigo-100' : 'text-gray-800 dark:text-white'}`}>
-                    {d}
-                  </div>
-                  <div className="text-xs mt-1 flex flex-col items-center gap-1">
-                    {eventsForDate(d).map(ev => (
-                      <div
-                        key={ev._id}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevents the parent div's onClick from firing
-                          openModal(d, ev);
-                        }}
-                        className="bg-indigo-500 text-white rounded-full px-2 py-1 truncate w-full text-center"
-                      >
-                        {ev.name}
-                      </div>
-                    ))}
-                  </div>
-                </>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {steps.map((step, i) => (
+          <div
+            key={i}
+            className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transition-transform duration-200 transform hover:scale-105 cursor-pointer ${getCardColor(
+              step.completed
+            )}`}
+          >
+            <div onClick={() => toggle(i)}>
+              <div className="p-4 rounded-full inline-block mb-4">
+                {iconMap[step.icon]}
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                {step.title}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {step.description}
+              </p>
+              {step.completed && (
+                <div className="mt-2 text-green-500 flex items-center justify-center space-x-1">
+                  <CheckCircle size={16} />
+                  <span className="text-sm font-semibold">Completed</span>
+                </div>
               )}
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Modal for adding/editing events */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-xl text-gray-600 dark:text-gray-400 mb-10">
-              {editingEventId ? 'Edit event' : 'Add event for'} {selectedDate}
-            </h3>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              placeholder="Event name"
-            />
-            <div className="flex justify-between gap-2 mt-4">
-              <div className="flex">
-                {editingEventId && (
-                  <button onClick={deleteEvent} className="px-4 py-2 bg-red-600 text-white rounded-lg">
-                    Delete
-                  </button>
-                )}
-              </div>
-              <div className="flex">
-                <button onClick={() => setIsOpen(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg">Cancel</button>
-                <button
-                  onClick={save}
-                  disabled={!input.trim()}
-                  className={`px-4 py-2 rounded-lg transition-colors duration-200 ml-2 ${
-                    !input.trim()
-                      ? 'bg-blue-300 cursor-not-allowed text-gray-500'
-                      : 'bg-blue-600 text-white'
-                  }`}
-                >
-                  Save
-                </button>
-              </div>
+            {/* Due date */}
+            <div className="mt-4">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Due Date:
+              </label>
+              <input
+                type="date"
+                value={step.dueDate}
+                onChange={(e) => updateDueDate(i, e.target.value)}
+                className="w-full h-10 px-3 rounded border border-gray-300 dark:border-gray-600 
+               text-sm text-gray-800 dark:text-gray-200 
+               bg-white dark:bg-gray-700 
+               placeholder-gray-400 dark:placeholder-gray-300"
+              />
+            </div>
+
+            {/* Notes */}
+            <div className="mt-4">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Notes:
+              </label>
+              <textarea
+                value={step.notes}
+                onChange={(e) => updateNotes(i, e.target.value)}
+                placeholder="Add details..."
+                className="w-full min-h-[40px] px-3 py-2 rounded border border-gray-300 dark:border-gray-600 
+               text-sm text-gray-800 dark:text-gray-200 
+               bg-white dark:bg-gray-700 
+               placeholder-gray-400 dark:placeholder-gray-300 resize-none"
+    rows={2}
+  />
+              
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Message modal for errors, using the component from the app */}
-      {/* Note: MessageModal is now properly imported and used */}
-      {message && <MessageModal message={message} onClose={() => setMessage('')} />}
+        ))}
+      </div>
     </div>
   );
 }
