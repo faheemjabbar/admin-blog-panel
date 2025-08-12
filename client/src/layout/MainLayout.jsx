@@ -21,16 +21,16 @@ export default function MainLayout({ children, onNavSelect, activeView }) {
 
   return (
     <div className="flex bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Sidebar is already fixed and correctly positioned at top-16 */}
+      {/* Sidebar is fixed and positioned below the header on large screens */}
       <Sidebar isOpen={isSidebarOpen} onSelect={handleSelect} active={activeView} />
       
-      {/* This div now holds the header and the main content */}
+      {/* This div contains the header and main content */}
       <div className="flex-1 lg:ml-64 relative">
-        {/* Header is now fixed at the top */}
+        {/* Header is fixed to the top */}
         <Header onToggleSidebar={toggleSidebar} isDarkMode={isDark} toggleDarkMode={toggleDark} />
         
-        {/* Main content area needs top padding to not be hidden by the fixed header */}
-        <main className="pt-16 overflow-y-auto h-[calc(100vh)]">
+        {/* Main content with top padding to account for the header */}
+        <main className="pt-16 p-4">
           {children}
         </main>
       </div>
