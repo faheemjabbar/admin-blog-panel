@@ -68,7 +68,7 @@ export default function App() {
   const [message, setMessage] = useState('');
 
   // Define the API key for the Gemini API. This will be provided by the Canvas environment.
-  const apiKey = "AIzaSyDWGM4YaH0WxZHdND8PgvCI7ZCAcco4SIU";
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;;
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
   // Function to handle keyword analysis using the Gemini API
