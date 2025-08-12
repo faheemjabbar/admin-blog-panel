@@ -20,7 +20,7 @@ export default function Header({ onToggleSidebar, isDarkMode, toggleDarkMode }) 
   }, []);
 
   return (
-    <header className="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center transition-colors duration-300">
+    <header className="fixed top-0 w-full bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center transition-colors duration-300 z-40">
       {/* Left side */}
       <div className="flex items-center space-x-4">
         <button
