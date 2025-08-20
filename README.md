@@ -6,9 +6,7 @@ Built with **React, Tailwind CSS, Node.js, Express, MongoDB, and JWT authenticat
 ---
 
 ## 🚀 Live Demo
-Frontend: [https://admin-blog-panel-1.onrender.com](https://admin-blog-panel-1.onrender.com)  
-Backend API: [https://admin-blog-panel.onrender.com](https://admin-blog-panel.onrender.com)  
-
+Live Link :(https://admin-blog-panel-1.onrender.com) 
 
 ---
 
