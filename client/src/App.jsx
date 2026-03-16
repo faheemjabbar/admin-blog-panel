@@ -16,6 +16,8 @@ import LoginPage from "./pages/LoginPage";
 
 import UIPrinciples from './features/ui/UIPrinciples';
 
+import MessageModal from './components/MessageModal';
+
 import { AuthContext } from "./context/AuthContext";
 
 import { Loader } from "lucide-react";
@@ -24,96 +26,110 @@ import { Loader } from "lucide-react";
 
 export default function App() {
 
-  const { user, loadingAuth } = useContext(AuthContext);
+  const { user, loadingAuth, modal, setModal } = useContext(AuthContext);
 
-  const [view, setView] = useState("content");
+  const [view, setView] = useState("content");
 
-  const [darkMode, setDarkMode] = useState(() => {
+  const [darkMode, setDarkMode] = useState(() => {
 
-    // Load preference from localStorage
+    // Load preference from localStorage
 
-    return localStorage.getItem("theme") === "dark";
+    return localStorage.getItem("theme") === "dark";
 
-  });
-
-
-
-  // Apply theme to <html> root
-
-  useEffect(() => {
-
-    if (darkMode) {
-
-      document.documentElement.classList.add("dark");
-
-      localStorage.setItem("theme", "dark");
-
-    } else {
-
-      document.documentElement.classList.remove("dark");
-
-      localStorage.setItem("theme", "light");
-
-    }
-
-  }, [darkMode]);
+  });
 
 
 
-  if (loadingAuth) {
+  // Apply theme to <html> root
 
-    return (
+  useEffect(() => {
 
-      <div className="flex items-center justify-center h-screen bg-surface-light dark:bg-surface-dark transition-colors duration-300">
+    if (darkMode) {
 
-        <Loader size={48} className="animate-spin text-brand-light dark:text-brand-dark" />
+      document.documentElement.classList.add("dark");
 
-      </div>
+      localStorage.setItem("theme", "dark");
 
-    );
+    } else {
 
-  }
+      document.documentElement.classList.remove("dark");
 
+      localStorage.setItem("theme", "light");
 
+    }
 
-  if (!user) {
-
-    return <LoginPage toggleTheme={() => setDarkMode(!darkMode)} darkMode={darkMode} />;
-
-  }
+  }, [darkMode]);
 
 
 
-  return (
+  if (loadingAuth) {
 
-    <div className="min-h-screen bg-surface-light dark:bg-surface-dark text-text-light dark:text-text-dark transition-colors duration-300">
+    return (
 
-      <MainLayout
+      <div className="flex items-center justify-center h-screen bg-surface-light dark:bg-surface-dark transition-colors duration-300">
 
-        onNavSelect={setView}
+        <Loader size={48} className="animate-spin text-brand-light dark:text-brand-dark" />
 
-        activeView={view}
+      </div>
 
-        toggleTheme={() => setDarkMode(!darkMode)}
+    );
 
-        darkMode={darkMode}
+  }
 
-      >
 
-        {view === "content" && <Dashboard />}
 
-        {view === "calendar" && <CalendarView />}
+  if (!user) {
 
-        {view === "seo" && <SEOtools />}
+    return <LoginPage toggleTheme={() => setDarkMode(!darkMode)} darkMode={darkMode} />;
 
-        {view === "lifecycle" && <Lifecycle />}
+  }
 
-        {view === "ui" && <UIPrinciples />} {/* placeholder */}
 
-      </MainLayout>
 
-    </div>
+  return (
 
-  );
+    <div className="min-h-screen bg-surface-light dark:bg-surface-dark text-text-light dark:text-text-dark transition-colors duration-300">
+
+      <MainLayout
+
+        onNavSelect={setView}
+
+        activeView={view}
+
+        toggleTheme={() => setDarkMode(!darkMode)}
+
+        darkMode={darkMode}
+
+      >
+
+        {view === "content" && <Dashboard />}
+
+        {view === "calendar" && <CalendarView />}
+
+        {view === "seo" && <SEOtools />}
+
+        {view === "lifecycle" && <Lifecycle />}
+
+        {view === "ui" && <UIPrinciples />} {/* placeholder */}
+
+      </MainLayout>
+
+      
+
+      {modal.isOpen && (
+
+        <MessageModal 
+
+          message={modal.message} 
+
+          onClose={() => setModal({ isOpen: false, message: '' })} 
+
+        />
+
+      )}
+
+    </div>
+
+  );
 
 }

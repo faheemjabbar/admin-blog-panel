@@ -42,13 +42,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (name, email, password) => {
+    try {
+      const data = await api.post('/api/auth/register', { name, email, password });
+      setModal({ isOpen: true, message: 'Registration successful! Please login.' });
+      return data;
+    } catch (err) {
+      setModal({ isOpen: true, message: err.body?.message || err.message || 'Registration failed' });
+      throw err;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loadingAuth, login, logout, modal, setModal }}>
+    <AuthContext.Provider value={{ user, loadingAuth, login, register, logout, modal, setModal }}>
       {children}
     </AuthContext.Provider>
   );

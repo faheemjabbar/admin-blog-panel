@@ -42,6 +42,7 @@ export default function LoginPage() {
           <p className="text-gray-500 dark:text-gray-400 mt-2">
             {isRegister ? 'Sign up to get started' : 'Sign in to your dashboard'}
           </p>
+
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,6 +88,19 @@ export default function LoginPage() {
           </div>
 
           {error && <div className="text-sm text-red-500">{error}</div>}
+
+          {!isRegister && (
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('test_user@mail.com');
+                setPassword('password7809');
+              }}
+              className="w-full px-4 py-2 mb-2 text-blue-600 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            >
+              Use Demo Credentials
+            </button>
+          )}
 
           <button
             type="submit"
